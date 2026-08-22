@@ -1,12 +1,17 @@
 # KeSp_dongle
 
-USB receiver dongles for the **KaSe** wireless split ergonomic keyboard.
-Each keyboard half transmits over 2.4 GHz through an NRF24L01+; the dongle
-receives both links and presents itself to the host as a USB HID keyboard.
+USB receiver dongles for the **Niphargus** wireless split keyboard, and soon
+for the **Conchodytes** mouse. Both talk 2.4 GHz over nRF24L01+ and share this
+single receiver, which presents itself to the host as a USB HID device.
 
-KiCad 10 projects. Ecosystem: [KeSp_firmware](https://github.com/mornepousse/KeSp_firmware),
-[KeSp_software](https://github.com/mornepousse/KeSp_software),
-[KaSe_PCB](https://github.com/mornepousse/KaSe_PCB).
+Each Niphargus half is self-contained — its own ESP32-S3-WROOM-1, nRF24L01+ and
+16340 cell — and transmits on its own link. Hence the two radios on the dongle,
+one per half. The mouse will join on an additional pipe or in a later revision.
+
+KiCad 10 projects. Ecosystem: [Niphargus](https://github.com/mornepousse/Niphargus) (keyboard),
+[Conchodytes](https://github.com/mornepousse/Conchodytes) (mouse),
+[KeSp_firmware](https://github.com/mornepousse/KeSp_firmware),
+[KeSp_software](https://github.com/mornepousse/KeSp_software).
 
 *[Version française plus bas](#version-française).*
 
@@ -33,8 +38,10 @@ several months, enumerating and working as a USB HID keyboard.
 
 ## `dongle-s3` architecture
 
-**Radio** — 2x NRF24L01+ on a shared SPI bus, one per keyboard half.
-Separate CSN/CE/IRQ lines, 100 Ω series resistors on every signal.
+**Radio** — 2x NRF24L01+ on a shared SPI bus, one per Niphargus half.
+Separate CSN/CE/IRQ lines, 100 Ω series resistors on every signal. The
+Conchodytes mouse is not wired in yet: it will either share a radio through an
+extra receive pipe (the nRF24L01+ handles six) or get its own in a revision.
 
 **USB** — the M.2 slot provides a single USB 2.0 link, split by a hub:
 
@@ -104,13 +111,19 @@ from the schematic, and importing a stale one overwrites current work.
 
 # Version française
 
-Dongles USB récepteurs pour le clavier ergonomique sans fil **KaSe**.
-Chaque moitié du clavier émet en 2,4 GHz via un NRF24L01+ ; le dongle reçoit
-les deux liens et se présente au PC comme un clavier USB HID.
+Dongles USB récepteurs pour le clavier split sans fil **Niphargus**, et
+bientôt pour la souris **Conchodytes**. Les deux émettent en 2,4 GHz via un
+nRF24L01+ et partagent ce même récepteur, qui se présente au PC en USB HID.
 
-Projets KiCad 10. Écosystème : [KeSp_firmware](https://github.com/mornepousse/KeSp_firmware),
-[KeSp_software](https://github.com/mornepousse/KeSp_software),
-[KaSe_PCB](https://github.com/mornepousse/KaSe_PCB).
+Chaque moitié du Niphargus est autonome — son ESP32-S3-WROOM-1, son nRF24L01+
+et sa cellule 16340 — et émet sur son propre lien. D'où les deux radios du
+dongle, une par moitié. La souris arrivera sur un pipe supplémentaire ou dans
+une révision ultérieure.
+
+Projets KiCad 10. Écosystème : [Niphargus](https://github.com/mornepousse/Niphargus) (clavier),
+[Conchodytes](https://github.com/mornepousse/Conchodytes) (souris),
+[KeSp_firmware](https://github.com/mornepousse/KeSp_firmware),
+[KeSp_software](https://github.com/mornepousse/KeSp_software).
 
 Les rendus plus haut montrent `dongle-s3` en révision **V1.0**, la carte
 actuellement en service. Dessus : le CH334R (U6), le CH340C (U4),
@@ -131,8 +144,11 @@ plusieurs mois, où elle énumère et fonctionne en clavier USB HID.
 
 ## Architecture de `dongle-s3`
 
-**Radio** — 2x NRF24L01+ sur bus SPI partagé, un par moitié de clavier.
-CSN/CE/IRQ séparés, résistances série de 100 Ω sur chaque signal.
+**Radio** — 2x NRF24L01+ sur bus SPI partagé, un par moitié de Niphargus.
+CSN/CE/IRQ séparés, résistances série de 100 Ω sur chaque signal. La souris
+Conchodytes n'est pas encore câblée : elle partagera une radio via un pipe de
+réception supplémentaire (le nRF24L01+ en gère six) ou aura la sienne dans une
+révision.
 
 **USB** — le slot M.2 fournit un seul lien USB 2.0, dédoublé par un hub :
 
