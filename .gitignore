@@ -1,0 +1,22 @@
+# KiCad — verrous et sauvegardes
+~*.lck
+*.lck
+*-backups/
+_restore_backup_*/
+_autosave-*
+*.bak
+*.kicad_sch-bak
+*-rescue.*
+.history/
+
+# KiCad — caches
+fp-info-cache
+*-cache.lib
+
+# Netlists exportees : regenerables, et une netlist perimee importee par
+# erreur ecrase le travail en cours. On ne les versionne pas.
+*.net
+
+# Archives de fabrication
+*.zip
+*.rar

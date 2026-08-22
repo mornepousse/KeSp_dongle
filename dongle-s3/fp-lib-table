@@ -1,0 +1,6 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "MaeLid")(type "KiCad")(uri "${KIPRJMOD}/../libs/MaeLid.pretty")(options "")(descr "Empreintes maison : NRF24L01, ESP32-S3-DevKitC, JC-ESP32P4-M3, logo"))
+	(lib (name "M.2-cards")(type "KiCad")(uri "${KIPRJMOD}/../libs/M.2-cards")(options "")(descr "Gabarits de cartes M.2"))
+	(lib (name "NGFF")(type "KiCad")(uri "${KIPRJMOD}/../libs/NGFF.pretty")(options "")(descr "Connecteurs M.2 / NGFF"))
+)
