@@ -8,11 +8,20 @@ Projets KiCad 10. Écosystème : [KeSp_firmware](https://github.com/mornepousse/
 [KeSp_software](https://github.com/mornepousse/KeSp_software),
 [KaSe_PCB](https://github.com/mornepousse/KaSe_PCB).
 
+| Dessus | Dessous |
+|---|---|
+| ![Dessus de la carte](images/top.png) | ![Dessous de la carte](images/bottom.png) |
+
+`dongle-s3` en révision **V1.0**, celle qui est partie en fabrication.
+Dessus : le CH334R (U6), le CH340C (U4), l'ESP32-S3-WROOM-1 (U7) et le bord
+de carte M.2 Key B. Dessous : les deux NRF24L01+ (U2 et U3) sur leurs
+embases 2 mm, un par moitié de clavier.
+
 ## Les trois variantes
 
 | Dossier | MCU | Format | État |
 |---|---|---|---|
-| `dongle-s3/` | ESP32-S3-WROOM-1 | M.2 Key B 3042 (22×42 mm) | fabriqué (gerbers du 27/05/2026) |
+| `dongle-s3/` | ESP32-S3-WROOM-1 | M.2 Key B 3042 (22×42 mm) | V1.0 fabriquée (gerbers du 27/05/2026), source en V1.1 |
 | `dongle-p4/` | ESP32-P4 QFN104 + ESP32-S3-WROOM-1 | M.2 Key B | en cours |
 | `dongle-ext/` | ESP32-S3-WROOM-1 | connecteurs 2,54 mm, pas de bord M.2 | prototype |
 
@@ -79,7 +88,9 @@ Le reste vient des bibliothèques standard KiCad et de `PCM_Espressif`
 ## Fabrication
 
 Les gerbers de chaque variante sont dans son sous-dossier `Gerber/`.
-Ceux de `dongle-s3` datent du 27/05/2026 et correspondent à la série reçue.
+Ceux de `dongle-s3` datent du 27/05/2026 et correspondent à la série reçue, en
+révision V1.0. La source a depuis évolué en V1.1 : R9 supprimée et découplage
+complété (C8 à C12). Les gerbers ne sont donc plus à jour vis-à-vis du PCB.
 
 ---
 
