@@ -1,67 +1,63 @@
-# KaSe v2 -- USB Dongle
+# dongle-ext — header prototype, no M.2
 
-USB dongle that receives keystrokes from both keyboard halves via NRF24L01+ and presents as USB HID to the host PC. Designed as an M.2 Key B card that plugs into a laptop WWAN slot.
+USB HID receiver for the **Niphargus** split keyboard, in the same shape as the
+M.2 variants but without the card edge: USB arrives on a 2.54 mm header, and
+the board carries its own regulator.
+
+Prototype, kept for bench work and for hosts with no usable M.2 slot. The
+designs that go in a laptop are [`../dongle-REV1/`](../dongle-REV1/) and
+[`../dongle-REV2/`](../dongle-REV2/).
 
 ## Architecture
 
 ```
-Laptop M.2 WWAN slot
-  |
-  +-- USB 2.0 (D+/D-) --> CH334R hub --> Port 1: ESP32-S3 native USB (TinyUSB HID)
-  |                                  --> Port 2: CH340C (flash/debug UART)
-  +-- 3.3V power -------> ESP32-S3 + NRF24L01+ + CH334R + CH340C
-  +-- ~RESET (pin 67) ---> RC filter --> ESP32 EN
+J1, 4-pin 2.54 mm header
+  ├── VBUS 5 V ──> U1 (LD1117S33) ──> 3.3 V rail
+  └── D+/D− ────> CH334R hub ──┬─> port 1: ESP32-S3 native USB (HID)
+                               ├─> port 2: CH340C (UART, flash/debug)
+                               └─> ports 3-4: not connected
 
-ESP32-S3 <--SPI--> NRF24L01+ #1 <--2.4GHz--> Left half
-                   NRF24L01+ #2 <--2.4GHz--> Right half
+ESP32-S3 ──SPI──┬── NRF24L01+ U2 ──2.4 GHz── Niphargus left half
+                └── NRF24L01+ U3 ──2.4 GHz── Niphargus right half
 ```
+
+## J1
+
+| Pin | Signal |
+|---|---|
+| 1 | GND |
+| 2 | USB D− |
+| 3 | USB D+ |
+| 4 | VBUS, 5 V |
+
+**This is the reverse of a USB-A cable's pin order.** Build the pigtail to
+match, or 5 V lands on ground.
 
 ## Components
 
-| Component | Role | Package |
-|-----------|------|---------|
-| ESP32-S3-WROOM-2 | MCU, USB HID | Module |
-| NRF24L01+ (x2) | Wireless RX from each half | Breakout |
-| CH334R | USB 2.0 hub, crystal-free, 3.3V | QSOP-16 |
-| CH340C | USB-to-UART for programming | SOP-16 |
-| UMH3N (x2) | Auto-reset (DTR/RTS to EN/IO0) | SOT-363 |
+| Ref | Part | Role | Package |
+|---|---|---|---|
+| U7 | ESP32-S3-WROOM-1 | MCU, USB HID | module |
+| U2, U3 | NRF24L01+ | one radio per keyboard half | breakout, 2 mm headers |
+| U6 | CH334R | USB 2.0 hub, crystal-free | QSOP-16 |
+| U4 | CH340C | USB-to-UART for flashing and console | SOIC-16 |
+| U1 | LD1117S33 | 3.3 V from J1's VBUS | SOT-223 |
+| Q1 | UMH3N | auto-reset, DTR/RTS to EN and IO0 | SOT-363 |
 
-## Form Factor
+Q1 is a **dual** transistor: its two schematic units are one physical package.
 
-**M.2 Key B 3042** (22 x 42 mm), PCB thickness 0.8 mm. Fits laptop WWAN slots (tested: Dell Latitude 5430).
+## Differences from the M.2 variants
 
-## Power
-
-Powered directly from the M.2 slot 3.3V rail. No onboard voltage regulator -- CH334R runs at 3.3V with internal LDO bypassed (pin 12 and 13 both tied to 3.3V, confirmed by WCH datasheet).
-
-## USB Hub (CH334R)
-
-Both USB ports accessible without removing the dongle:
-- **Port 1**: ESP32-S3 native USB (TinyUSB HID keyboard)
-- **Port 2**: CH340C UART (flash and debug)
-- **Ports 3-4**: unused (NC)
-
-Crystal-free mode: XI pin (16) tied to GND.
-
-## M.2 Key B Connections
-
-| M.2 Pin | Signal | Connection |
-|---------|--------|------------|
-| 7 | USB_D+ | CH334R pin 11 (DMU+) |
-| 9 | USB_D- | CH334R pin 10 (DMU-) |
-| 2,4,71,73,75 | +3.3V | Power rail + C 10uF decoupling |
-| 3,5,11,70,72 | GND | Ground |
-| 8 | ~{W_DISABLE1} | R 10k pull-up to 3.3V |
-| 6 | ~{FULL_CARD_POWER_OFF} | R 10k pull-up to 3.3V |
-| 67 | ~{RESET} | R 10k + C 100nF RC filter to ESP32 EN |
-| 66 | SIM_DETECT | NC |
-| 12-19 | Key B notch | No pads |
-| All others | NC | Not connected |
+- **Own supply**: LD1117S33 from the header's 5 V, instead of the slot's 3.3 V.
+  There is no reverse-blocking diode here — nothing can back-feed the header,
+  since there is no second source.
+- **R9 is still fitted**: 100 Ω between the 3.3 V rail and the CH334R's pin 12
+  (5V). REV1 dropped it in V1.1 and ties pin 12 straight to 3.3 V. Either way
+  the point stands — leave pin 12 floating and the part overheats and refuses
+  to enumerate.
+- **No M.2 control signals**: no CONFIG pins, no `W_DISABLE1#`, no `RESET#`
+  into `EN`. The host cannot reset the module.
 
 ## PCB
 
-- KiCad 9, designed for JLCPCB fabrication
-- M.2 edge connector footprint (Key B)
-- PCB thickness: 0.8 mm (M.2 standard)
-- NRF24L01+ on bottom side, antennas extending past board edge
-- All SMD except NRF24L01+ breakout headers
+KiCad 10. Gerbers in `Gerber/`, exported 2026-06-04.

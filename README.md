@@ -63,14 +63,17 @@ this package.
 **Power** — no onboard regulator, 3.3 V comes straight from the M.2 slot
 (pins 2, 4, 70, 72, 74; grounds on 3, 5, 11, 71, 73).
 
-**M.2 control signals** — 10 kΩ pull-ups to 3.3 V on the three host control
-inputs, so the host cannot disable the card at boot:
+**M.2 control signals** — `W_DISABLE1#` and `FULL_CARD_POWER_OFF#` get 10 kΩ
+pull-ups to 3.3 V, so the host cannot disable the card at boot. `RESET#` is
+different: R22 carries it into the ESP32-S3's `EN` node, which also holds a
+10 kΩ pull-up (R19) and 100 nF to ground (C7). **The host can therefore reset
+the module** — worth remembering when a slot behaves oddly.
 
-| Signal | M.2 pin | Resistor |
-|---|---|---|
-| `W_DISABLE1#` | 8 | R21 |
-| `RESET#` | 67 | R22 |
-| `FULL_CARD_POWER_OFF#` | 6 | R23 |
+| Signal | M.2 pin | Part | Goes to |
+|---|---|---|---|
+| `W_DISABLE1#` | 8 | R21, 10 kΩ | +3.3 V — pull-up |
+| `FULL_CARD_POWER_OFF#` | 6 | R23, 10 kΩ | +3.3 V — pull-up |
+| `RESET#` | 67 | R22, 10 kΩ | ESP32-S3 `EN` |
 
 **Auto-reset** — one UMH3N (a dual transistor in SOT-363) driven from the
 CH340C DTR/RTS lines to EN and IO0.
@@ -150,7 +153,9 @@ fixed in it — the dangling via and track, the two real clearance violations.
 Clean those before ordering.
 
 The REV1 gerbers match the batch that was manufactured, revision V1.0. That
-source has since moved on: R9 removed and decoupling completed (C8 through C12).
+source has since moved on: R9 removed, decoupling completed (C8 through C12),
+and the `JP2`–`JP5` CONFIG jumpers added — so `dongle-REV1/` no longer
+describes the board sitting in the Latitude.
 
 Neither exported netlists (`*.net`) nor fabrication archives (`*.zip`) are
 version-controlled: both regenerate from the source, and importing a stale
@@ -224,14 +229,18 @@ chauffer le composant et empêche l'énumération — c'est le piège de ce boî
 **Alimentation** — aucun régulateur embarqué, le 3,3 V vient directement du
 slot M.2 (pins 2, 4, 70, 72, 74 ; masses sur 3, 5, 11, 71, 73).
 
-**Signaux M.2** — pull-ups 10 kΩ vers 3,3 V sur les trois entrées de contrôle
-de l'hôte, pour que la carte ne soit pas désactivée au démarrage :
+**Signaux M.2** — `W_DISABLE1#` et `FULL_CARD_POWER_OFF#` reçoivent des
+pull-ups de 10 kΩ vers 3,3 V, pour que la carte ne soit pas désactivée au
+démarrage. `RESET#` est différent : R22 l'amène sur le nœud `EN` de
+l'ESP32-S3, qui porte aussi un pull-up de 10 kΩ (R19) et 100 nF vers la masse
+(C7). **L'hôte peut donc réinitialiser le module** — bon à savoir quand un slot
+se comporte bizarrement.
 
-| Signal | Pin M.2 | Résistance |
-|---|---|---|
-| `W_DISABLE1#` | 8 | R21 |
-| `RESET#` | 67 | R22 |
-| `FULL_CARD_POWER_OFF#` | 6 | R23 |
+| Signal | Pin M.2 | Composant | Va vers |
+|---|---|---|---|
+| `W_DISABLE1#` | 8 | R21, 10 kΩ | +3,3 V — pull-up |
+| `FULL_CARD_POWER_OFF#` | 6 | R23, 10 kΩ | +3,3 V — pull-up |
+| `RESET#` | 67 | R22, 10 kΩ | `EN` de l'ESP32-S3 |
 
 **Reset automatique** — un UMH3N (double transistor en SOT-363) piloté par les
 lignes DTR/RTS du CH340C vers EN et IO0.
@@ -313,7 +322,9 @@ ouverts ci-dessus n'y est corrigé — la via et la piste orphelines, les deux
 isolations réelles. À nettoyer avant toute commande.
 
 Les gerbers de REV1 correspondent à la série reçue, en révision V1.0. Cette
-source a depuis évolué : R9 supprimée et découplage complété (C8 à C12).
+source a depuis évolué : R9 supprimée, découplage complété (C8 à C12), et
+jumpers CONFIG `JP2`–`JP5` ajoutés — `dongle-REV1/` ne décrit donc plus la
+carte montée dans le Latitude.
 
 Ni les netlists exportées (`*.net`) ni les archives de fabrication (`*.zip`) ne
 sont versionnées : les deux se régénèrent depuis la source, et importer une
