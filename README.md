@@ -30,11 +30,13 @@ headers, one per keyboard half.
 |---|---|---|---|
 | `dongle-REV1/` | ESP32-S3-WROOM-1 | M.2 Key B 3042 (30 × 42 mm) | **in service** — V1.0 running in a Dell Latitude 5430's M.2 slot for several months |
 | `dongle-REV2/` | ESP32-S3-WROOM-1 | M.2 Key B 3042 (30 × 42 mm) | current design — hub dropped, M.2 CONFIG pins declared, bench supply added; not manufactured yet |
-| `dongle-ext/` | ESP32-S3-WROOM-1 | 2.54 mm headers, no M.2 card edge | prototype |
+| `dongle-ext/` | ESP32-S3-WROOM-1 | 2.54 mm headers, no M.2 card edge | prototype — **now the path forward**, see below |
 
 `dongle-REV1` is the only design proven in real use: it enumerates and works as
 a USB HID keyboard in the Latitude's M.2 WWAN slot. It does **not** work in a
-ThinkPad P16 Gen 1 — the reason, and what REV2 does about it, are written up in
+ThinkPad P16 Gen 1, and **neither does REV2**: that machine refuses to power
+its WWAN slot on any CONFIG code. The measurements that establish it, and where
+the project goes instead, are in
 [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
 
 ## `dongle-REV1` architecture
@@ -82,8 +84,13 @@ CH340C DTR/RTS lines to EN and IO0.
 
 REV1 declares nothing on the M.2 CONFIG pins, so a host that reads them before
 powering the slot sees "no card present" and never delivers 3.3 V. That is what
-happens on a ThinkPad P16 Gen 1. REV2 answers it, and simplifies the USB path
-on the way:
+happens on a ThinkPad P16 Gen 1. REV2 declares a code, and simplifies the USB
+path on the way.
+
+It did not rescue that machine — the P16 halts with `1802` on every WWAN code
+and powers the slot on none — but the jumpers remain the right answer for any
+host that does read CONFIG, and the rest of the simplification stands on its
+own:
 
 | Change | Why |
 |---|---|
@@ -135,8 +142,10 @@ Everything else comes from the standard KiCad libraries and from
   capacitance a USB 2.0 device may present on VBUS.
 - `dongle-REV2`: `J1` is wired 1 = GND, 2 = D−, 3 = D+, 4 = VBUS, the reverse
   of a USB-A cable's order. The pigtail must be built to match.
-- Whether the P16 Gen 1 powers its WWAN slot at all, and on which CONFIG code,
-  is still unmeasured. The test costs a wire on an existing V1.0 board — see
+- The ThinkPad P16 Gen 1 is settled and the answer is no: measured 2026-10-13,
+  no CONFIG code powers its WWAN slot, and every WWAN code halts the machine
+  with `1802`. The next route is the laptop's smart-card-reader USB flex, which
+  `dongle-ext` already matches pin for pin — see
   [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
 
 ## Fabrication
@@ -163,9 +172,10 @@ netlist overwrites current work.
 
 ## Documentation
 
-- [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md) — why the M.2 WWAN
-  slot of a ThinkPad P16 Gen 1 never powers the card, the M.2 CONFIG pins, what
-  other USB cards in M.2 slots do, the test protocol, and REV2's state.
+- [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md) — the closed
+  investigation into a ThinkPad P16 Gen 1: the CONFIG sweep and its readings,
+  the host's read-authorize-power sequence, why no code works, what that rules
+  out, and the smart-card-reader route that replaces it.
 
 ---
 
@@ -196,12 +206,14 @@ NRF24L01+ (U2 et U3) sur leurs embases 2 mm, un par moitié de clavier.
 |---|---|---|---|
 | `dongle-REV1/` | ESP32-S3-WROOM-1 | M.2 Key B 3042 (30 × 42 mm) | **en service** — V1.0 montée dans le slot M.2 d'un Dell Latitude 5430 depuis plusieurs mois |
 | `dongle-REV2/` | ESP32-S3-WROOM-1 | M.2 Key B 3042 (30 × 42 mm) | conception courante — hub supprimé, pins CONFIG déclarées, alimentation de banc ajoutée ; pas encore fabriquée |
-| `dongle-ext/` | ESP32-S3-WROOM-1 | connecteurs 2,54 mm, pas de bord M.2 | prototype |
+| `dongle-ext/` | ESP32-S3-WROOM-1 | connecteurs 2,54 mm, pas de bord M.2 | prototype — **c'est désormais la suite**, voir plus bas |
 
 `dongle-REV1` est la seule éprouvée à l'usage : elle énumère et fonctionne en
 clavier USB HID dans le slot M.2 WWAN du Latitude. Elle **ne fonctionne pas**
-dans un ThinkPad P16 Gen 1 — la raison, et ce que REV2 y répond, sont
-consignées dans [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
+dans un ThinkPad P16 Gen 1, et **REV2 non plus** : cette machine refuse
+d'alimenter son slot WWAN quel que soit le code CONFIG. Les relevés qui
+l'établissent, et la direction que prend le projet à la place, sont dans
+[`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
 
 ## Architecture de `dongle-REV1`
 
@@ -249,8 +261,13 @@ lignes DTR/RTS du CH340C vers EN et IO0.
 
 REV1 ne déclare rien sur les pins CONFIG du M.2 : un hôte qui les lit avant
 d'alimenter le slot comprend « pas de carte » et ne délivre jamais le 3,3 V.
-C'est ce qui se passe sur un ThinkPad P16 Gen 1. REV2 y répond, et simplifie le
-chemin USB au passage :
+C'est ce qui se passe sur un ThinkPad P16 Gen 1. REV2 déclare un code, et
+simplifie le chemin USB au passage.
+
+Ça n'a pas sauvé cette machine-là — le P16 halte en `1802` sur tous les codes
+WWAN et n'alimente le slot sur aucun — mais les jumpers restent la bonne
+réponse pour tout hôte qui lit CONFIG, et le reste de la simplification se
+défend tout seul :
 
 | Modification | Raison |
 |---|---|
@@ -304,9 +321,11 @@ Le reste vient des bibliothèques standard KiCad et de `PCM_Espressif`
 - `dongle-REV2` : `J1` est câblé 1 = GND, 2 = D−, 3 = D+, 4 = VBUS, soit
   l'inverse de l'ordre d'un câble USB-A. Le pigtail doit être fait en
   conséquence.
-- Savoir si le P16 Gen 1 alimente son slot WWAN, et sur quel code CONFIG, n'est
-  toujours pas mesuré. L'essai coûte un fil sur une V1.0 existante — voir
-  [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
+- Le cas du ThinkPad P16 Gen 1 est tranché, et la réponse est non : mesuré le
+  13/10/2026, aucun code CONFIG n'alimente son slot WWAN, et tous les codes
+  WWAN haltent la machine en `1802`. La suite passe par la nappe USB du lecteur
+  de carte à puce du portable, que `dongle-ext` accepte déjà broche pour
+  broche — voir [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
 
 ## Fabrication
 
@@ -332,7 +351,8 @@ netlist périmée écrase le travail en cours.
 
 ## Documentation
 
-- [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md) — pourquoi le slot
-  M.2 WWAN d'un ThinkPad P16 Gen 1 n'alimente jamais la carte, les pins CONFIG
-  du M.2, ce que font les autres cartes USB en slot M.2, le protocole d'essai,
-  et l'état de REV2.
+- [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md) — l'enquête close
+  sur un ThinkPad P16 Gen 1 : le balayage des codes CONFIG et ses relevés, la
+  séquence lire-autoriser-alimenter de l'hôte, pourquoi aucun code ne marche,
+  ce que ça élimine, et la route par le lecteur de carte à puce qui prend le
+  relais.

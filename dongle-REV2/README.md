@@ -5,9 +5,16 @@ one per half, an ESP32-S3-WROOM-1, and an M.2 Key B card edge that plugs into a
 laptop WWAN slot.
 
 Current design, **not manufactured yet**. It starts from
-[`../dongle-REV1/`](../dongle-REV1/) and answers the ThinkPad P16 Gen 1, whose
-WWAN slot never powers the V1.0 board. The full story, with the measurements
-still to make, is in [`../docs/hote-thinkpad-p16.md`](../docs/hote-thinkpad-p16.md).
+[`../dongle-REV1/`](../dongle-REV1/), declaring a CONFIG code so that a host
+which reads those pins before powering the slot sees a card at all.
+
+It did **not** rescue the ThinkPad P16 Gen 1 that prompted it. Measured
+2026-10-13: that machine powers its WWAN slot on no CONFIG code, and halts with
+`1802` on every WWAN one. The readings and what they rule out are in
+[`../docs/hote-thinkpad-p16.md`](../docs/hote-thinkpad-p16.md); the route that
+replaces it is [`../dongle-ext/`](../dongle-ext/) on the laptop's
+smart-card-reader USB flex. The rest of what REV2 changes — one USB device
+instead of three, a bench supply — stands on its own.
 
 ## What changed from REV1
 

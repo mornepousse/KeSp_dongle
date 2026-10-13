@@ -4,8 +4,17 @@ USB HID receiver for the **Niphargus** split keyboard, in the same shape as the
 M.2 variants but without the card edge: USB arrives on a 2.54 mm header, and
 the board carries its own regulator.
 
-Prototype, kept for bench work and for hosts with no usable M.2 slot. The
-designs that go in a laptop are [`../dongle-REV1/`](../dongle-REV1/) and
+Started as a bench prototype. It is **now the active route**: the ThinkPad P16
+Gen 1 refuses to power its M.2 WWAN slot on any CONFIG code, so the plan is to
+feed this board from that laptop's smart-card-reader USB flex, which carries
+VBUS / GND / D+ / D− — exactly J1's pinout below. See
+[`../docs/hote-thinkpad-p16.md`](../docs/hote-thinkpad-p16.md).
+
+To check when the machine is opened: this board is **29.90 × 35.50 mm**, while
+the reader's bay is described as 2242-sized (22 × 42 mm) — 8 mm wider, 7 mm
+shorter.
+
+The M.2 variants are [`../dongle-REV1/`](../dongle-REV1/) and
 [`../dongle-REV2/`](../dongle-REV2/).
 
 ## Architecture
