@@ -1,12 +1,14 @@
-# Hôte ThinkPad P16 Gen 1 — le slot WWAN est inutilisable, quel que soit le code
+# Hôte ThinkPad P16 Gen 1 — le slot WWAN est inerte, courant comme données
 
 Enquête close le **2026-10-13** sur un ThinkPad P16 Gen 1 `21D60019FR`
 (Alder Lake HX, BIOS N3FET46W 1.70, SKU sans module WWAN **mais avec les 4
 antennes**).
 
-**Conclusion : aucun code CONFIG ne permet d'alimenter ce slot.** Ce n'est pas
-une question de trouver le bon ; il n'y en a pas. La suite du projet passe par
-la nappe du lecteur de carte à puce, pas par le M.2.
+**Conclusion : le slot est inerte de bout en bout.** Aucun code CONFIG ne le
+fait alimenter, et en apportant le courant soi-même on ne trouve rien derrière :
+le port USB qui y mène est désactivé lui aussi. Ce n'est pas une question de
+trouver le bon code ; il n'y en a pas. La suite du projet passe par le lecteur
+de carte à puce, pas par le M.2.
 
 ## Le relevé
 
@@ -60,6 +62,31 @@ franchit jamais la deuxième étape.
 Les six combinaisons non essayées sont toutes indéfinies. Par déduction du
 mécanisme ci-dessus, elles tombent dans le cas « ignoré sans alimentation » —
 mais c'est une déduction, pas un relevé.
+
+## Second essai : apporter le courant soi-même
+
+Le BIOS refuse d'alimenter. Restait l'hypothèse que les **données** soient
+quand même câblées : les paires D+/D− vont typiquement du contrôleur hôte au
+connecteur en direct, et c'est le rail 3,3 V qu'un load switch coupe, pas le
+lien USB.
+
+Protocole : les quatre jumpers CONFIG ouverts, donc `1111`, donc aucun 1802 et
+un démarrage normal. Machine démarrée, puis 3,3 V injectés sur la carte par les
+embases 2 mm des nRF24 (`U2:1` et `U2:2`, les plus gros points de soudure de la
+carte), alimentation de labo à limitation de courant, `dmesg -w` ouvert.
+
+**Résultat : aucune énumération.** Pas même le hub CH334R, qui est pourtant
+indifférent à tout ce qui se passe en aval sur la carte.
+
+Donc le BIOS ne se contente pas de couper le rail : il **désactive aussi le
+port USB** qui mène au connecteur. Sans carte autorisée, le slot ne porte ni
+courant ni données.
+
+Deux variantes n'ont pas été essayées, et aucune ne paraît valoir le
+déplacement : établir le 3,3 V dès le POST plutôt qu'après démarrage — si la
+coupure du port découle de la lecture CONFIG, la présence d'un périphérique n'y
+change rien — et relire le menu `Security → I/O Port Access` du BIOS, qui
+coûte deux minutes si le sujet est rouvert un jour.
 
 ## Ce que ce résultat invalide
 
@@ -133,29 +160,45 @@ C'est l'autorisation qui manque, pas le câblage.
 La carte que le P16 accepte, la Fibocom L860-GL, est par ailleurs **PCIe
 Gen2**, l'USB2 n'y servant qu'au debug.
 
-## La suite : la nappe du lecteur de carte à puce
+## La suite : remplacer le lecteur de carte à puce
 
 L'USB interne du **lecteur de carte à puce** (`2ce3:9563` sur le P16, inutilisé
 ici) : connecteur carte mère n° 11 « Smart card reader connector » + nappe FFC
 (FRU n° 28), dépose au § 1180 de la HMM P16 Gen 1 — après la base (§ 1070) et
 le bezel clavier (§ 1150). Le lecteur tient par 2 vis M2×3,5 au bord avant
-gauche, dans un logement de la taille d'un 2242. Relever VBUS / GND / D+ / D−
-sur la nappe. Aucune whitelist, aucun CONFIG, alimentation garantie.
+gauche, dans un logement de la taille d'un 2242.
 
-**`dongle-ext` est déjà la bonne carte pour ça.** Son `J1` est câblé
-`1 GND, 2 D−, 3 D+, 4 VBUS`, avec un LD1117S33 depuis le 5 V — exactement ce
-que porte la nappe. Pas de nouvelle conception à faire : il faut un pigtail et
-un emplacement.
+**Ne pas dériver la nappe — remplacer ce qu'il y a au bout.** Une carte portant
+le même connecteur FFC prend la place du lecteur dans son logement et se branche
+sur la nappe d'origine. Pas de soudure au pas de 0,5 mm, pas de fil volant dans
+le portable, et un montage réversible : le lecteur se remet quand on veut.
 
-Le point à vérifier à l'ouverture : `dongle-ext` mesure **29,90 × 35,50 mm**,
-soit 8 mm de plus en largeur et 7 de moins en longueur qu'un 2242. Le logement
-du lecteur est décrit comme « de la taille d'un 2242 » dans la HMM, ce qui
-demande une mesure réelle.
+À relever à l'ouverture, avant de dessiner quoi que ce soit :
 
-Piste secondaire non vérifiée sur cette machine : le slot M.2 Key E du WLAN
-porte lui aussi de l'USB 2.0, puisque c'est par là que passe le Bluetooth.
-L'occuper coûterait le WiFi, ce qui en fait un mauvais échange, mais l'option
-existe.
+| À déterminer | Pourquoi |
+|---|---|
+| Pas du connecteur, nombre de contacts, type d'actionneur | donne la référence de l'empreinte |
+| Sens des contacts de la nappe — même face ou face opposée | s'y tromper inverse tout le brochage |
+| Quel contact porte VBUS, GND, D+, D− | **au multimètre, lecteur branché** ; une inversion de D+/D− ne se voit qu'à l'énumération |
+| Cotes du logement et position des deux trous M2 | contour de la carte |
+
+L'électronique, elle, existe déjà : `dongle-ext` porte un ESP32-S3, deux nRF24
+et un LD1117S33 alimenté par le 5 V de son `J1`, câblé `1 GND, 2 D−, 3 D+,
+4 VBUS` — exactement ce que porte la nappe. C'est un changement de connecteur
+et de contour, pas une conception neuve. À noter que `dongle-ext` mesure
+**29,90 × 35,50 mm**, à confronter aux cotes réelles du logement.
+
+**Vérifier d'abord que `Smart Card Slot` est sur *Enabled*** dans
+`Security → I/O Port Access` du BIOS. Cette machine a montré qu'elle désactive
+volontiers ce qu'elle n'attend pas, et toute cette route repose sur ce port.
+
+Piste secondaire non vérifiée : le slot M.2 Key E du WLAN porte lui aussi de
+l'USB 2.0, puisque c'est par là que passe le Bluetooth. C'est un bord de carte,
+donc un PCB à faire plutôt qu'un connecteur à trouver. L'occuper coûterait le
+WiFi, et rien ne dit que ce slot n'a pas son propre contrôle d'autorisation.
+
+Et si rien de tout cela n'aboutit, reste la solution que tout le monde emploie :
+un dongle sur un port USB externe. Défaite esthétique, pas fonctionnelle.
 
 ## État de la carte REV2
 

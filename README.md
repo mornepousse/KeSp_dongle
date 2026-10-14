@@ -34,8 +34,8 @@ headers, one per keyboard half.
 
 `dongle-REV1` is the only design proven in real use: it enumerates and works as
 a USB HID keyboard in the Latitude's M.2 WWAN slot. It does **not** work in a
-ThinkPad P16 Gen 1, and **neither does REV2**: that machine refuses to power
-its WWAN slot on any CONFIG code. The measurements that establish it, and where
+ThinkPad P16 Gen 1, and **neither does REV2**: that machine's WWAN slot carries
+neither current nor data without an authorized card. The measurements that establish it, and where
 the project goes instead, are in
 [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
 
@@ -142,10 +142,12 @@ Everything else comes from the standard KiCad libraries and from
   capacitance a USB 2.0 device may present on VBUS.
 - `dongle-REV2`: `J1` is wired 1 = GND, 2 = D−, 3 = D+, 4 = VBUS, the reverse
   of a USB-A cable's order. The pigtail must be built to match.
-- The ThinkPad P16 Gen 1 is settled and the answer is no: measured 2026-10-13,
+- The ThinkPad P16 Gen 1 is settled and the answer is no. Measured 2026-10-13:
   no CONFIG code powers its WWAN slot, and every WWAN code halts the machine
-  with `1802`. The next route is the laptop's smart-card-reader USB flex, which
-  `dongle-ext` already matches pin for pin — see
+  with `1802`. Measured 2026-10-14: feeding the card 3.3 V by hand enumerates
+  nothing either, so the BIOS disables that USB port as well. The slot carries
+  neither current nor data. The next route is a board that **replaces the
+  laptop's smart-card reader** on its own FFC — see
   [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
 
 ## Fabrication
@@ -210,8 +212,8 @@ NRF24L01+ (U2 et U3) sur leurs embases 2 mm, un par moitié de clavier.
 
 `dongle-REV1` est la seule éprouvée à l'usage : elle énumère et fonctionne en
 clavier USB HID dans le slot M.2 WWAN du Latitude. Elle **ne fonctionne pas**
-dans un ThinkPad P16 Gen 1, et **REV2 non plus** : cette machine refuse
-d'alimenter son slot WWAN quel que soit le code CONFIG. Les relevés qui
+dans un ThinkPad P16 Gen 1, et **REV2 non plus** : le slot WWAN de cette
+machine ne porte ni courant ni données sans carte autorisée. Les relevés qui
 l'établissent, et la direction que prend le projet à la place, sont dans
 [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
 
@@ -321,11 +323,13 @@ Le reste vient des bibliothèques standard KiCad et de `PCM_Espressif`
 - `dongle-REV2` : `J1` est câblé 1 = GND, 2 = D−, 3 = D+, 4 = VBUS, soit
   l'inverse de l'ordre d'un câble USB-A. Le pigtail doit être fait en
   conséquence.
-- Le cas du ThinkPad P16 Gen 1 est tranché, et la réponse est non : mesuré le
-  13/10/2026, aucun code CONFIG n'alimente son slot WWAN, et tous les codes
-  WWAN haltent la machine en `1802`. La suite passe par la nappe USB du lecteur
-  de carte à puce du portable, que `dongle-ext` accepte déjà broche pour
-  broche — voir [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
+- Le cas du ThinkPad P16 Gen 1 est tranché, et la réponse est non. Mesuré le
+  13/10/2026 : aucun code CONFIG n'alimente son slot WWAN, et tous les codes
+  WWAN haltent la machine en `1802`. Mesuré le 14/10/2026 : en apportant le
+  3,3 V à la main, rien n'énumère non plus, donc le BIOS désactive aussi ce
+  port USB. Le slot ne porte ni courant ni données. La suite est une carte qui
+  **remplace le lecteur de carte à puce** du portable sur sa propre nappe —
+  voir [`docs/hote-thinkpad-p16.md`](docs/hote-thinkpad-p16.md).
 
 ## Fabrication
 
