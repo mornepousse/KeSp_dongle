@@ -178,6 +178,11 @@ netlist overwrites current work.
   investigation into a ThinkPad P16 Gen 1: the CONFIG sweep and its readings,
   the host's read-authorize-power sequence, why no code works, what that rules
   out, and the smart-card-reader route that replaces it.
+- [`docs/m2-key-b.md`](docs/m2-key-b.md) — M.2 Key B reference material: the
+  socket-2 pinout regenerated from the KiCad symbol the boards are built on,
+  form factors, the CH334R notes, and what the Dell Latitude 5430's slot does.
+  Previously three identical copies, one per variant; merged, and its pinout
+  table corrected from pin 68 up.
 
 ---
 
@@ -360,3 +365,8 @@ netlist périmée écrase le travail en cours.
   séquence lire-autoriser-alimenter de l'hôte, pourquoi aucun code ne marche,
   ce que ça élimine, et la route par le lecteur de carte à puce qui prend le
   relais.
+- [`docs/m2-key-b.md`](docs/m2-key-b.md) — la matière première sur le M.2
+  Key B : brochage du socket 2 régénéré depuis le symbole KiCad sur lequel les
+  cartes sont construites, formats, notes sur le CH334R, et ce que fait le slot
+  du Dell Latitude 5430. C'était trois copies identiques, une par variante ;
+  fusionnées, et le tableau de brochage corrigé à partir de la pin 68.
